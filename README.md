@@ -12,7 +12,9 @@ USAGE:
 
 
 PLEASE:
-    make comment, idea
+
+    make comments, ideas
+    report errors
 
 THANKS.
 
