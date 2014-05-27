@@ -1,0 +1,9 @@
+[
+    { "caption": "-"},
+    {
+        "caption": "Add To Mthuy Sync List",
+        "command": "m_thuy_local_sync_add",
+        "args": {"paths": []}
+    },
+    { "caption": "-"}
+]
