@@ -28,38 +28,35 @@ class MThuyLocalSyncAfterSave(sublime_plugin.EventListener):
 
         # loop for all lines
         for line in lines:
-            splitPaths = line.split(":")
-            pathToSync = splitPaths.pop(0)
-            indexFound = currentDir.find(pathToSync)
+            splitPaths     = line.split("::")
+            sourceDir      = splitPaths.pop(0)
+            destinationDir = splitPaths.pop(0)
+
+            indexFound = currentDir.find(sourceDir)
 
             if (indexFound != 0):
-                # skip line which current path not in 
+                # the curent file is not in source dir so we don't need to sync
                 continue
 
-            # 
-            if (currentDir == pathToSync):
-                for destinationDir in splitPaths:
-                    if (not os.path.isdir(destinationDir)):
-                        continue
-                    destinationPath = os.path.join(destinationDir, fileName)
-                    if (os.path.exists(destinationPath)):
-                        self.makeBackup(destinationPath)
-                    
-                    shutil.copy(currentPath, destinationPath)
-                    print("MThuyLocalSync saved to: " + destinationPath)
+            if (currentDir == sourceDir):
+                if (not os.path.isdir(destinationDir)):
+                    continue
+                destinationPath = os.path.join(destinationDir, fileName)
+                if (os.path.exists(destinationPath)):
+                    self.makeBackup(destinationPath)
+                
+                shutil.copy(currentPath, destinationPath)
+                print("MThuyLocalSync - file copied to: " + destinationPath)
             else:
-                if (len(currentDir) > len(pathToSync)):
-                    for destinationDir in splitPaths:
-                        diffPath = os.path.relpath(currentDir, pathToSync)
-                        subDestinationDir = os.path.join(destinationDir, diffPath)
-                        if (not os.path.isdir(subDestinationDir)):
-                            os.makedirs(subDestinationDir)
-                        subDestinationPath = os.path.join(subDestinationDir, fileName)
-                        self.makeBackup(subDestinationPath)
-                        shutil.copy(currentPath, subDestinationPath)
-                        print("MThuyLocalSync saved to: " + subDestinationPath)
-
-
+                if (len(currentDir) > len(sourceDir)):
+                    diffPath = os.path.relpath(currentDir, sourceDir)
+                    subDestinationDir = os.path.join(destinationDir, diffPath)
+                    if (not os.path.isdir(subDestinationDir)):
+                        os.makedirs(subDestinationDir)
+                    subDestinationPath = os.path.join(subDestinationDir, fileName)
+                    self.makeBackup(subDestinationPath)
+                    shutil.copy(currentPath, subDestinationPath)
+                    print("MThuyLocalSync - file copied to: " + subDestinationPath)
 
 
     def makeBackup(self, filePath):
@@ -103,7 +100,7 @@ class MThuyLocalSyncAddCommand(sublime_plugin.WindowCommand):
         global storeFileName
         global storeDirName
 
-        lineToWrite = selectedPath + ":" + syncDestinationPath
+        lineToWrite = selectedPath + "::" + syncDestinationPath
         linesToWrite = []
         home = os.path.expanduser("~");
         storeDir = os.path.join(home, storeDirName)
@@ -118,7 +115,7 @@ class MThuyLocalSyncAddCommand(sublime_plugin.WindowCommand):
             if len(linesToWrite): 
                 # for loop each line in file
                 for lineIndex,line in enumerate(linesToWrite):
-                    pathsInLine = line.split(":")
+                    pathsInLine = line.split("::")
                     if (pathsInLine[0] == selectedPath):
                         isReplaceExistingLine = True
                         if (syncDestinationPath == ""):
@@ -171,12 +168,12 @@ class MThuyLocalSyncAddCommand(sublime_plugin.WindowCommand):
         lines = file.read().splitlines()
         file.close()
         for line in lines:
-            pathsInLine = line.split(":")
+            pathsInLine = line.split("::")
             if (pathsInLine[0] == pathToCheck):
                 # remove first path because it is selected path
                 # only need put sync to path
                 pathsInLine.pop(0)
-                return ":".join(pathsInLine)
+                return "::".join(pathsInLine)
         return ""
 
     def is_enabled(self, paths = []):
